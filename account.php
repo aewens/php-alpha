@@ -11,13 +11,36 @@ if (isset($_POST["create"])) {
     $email = $_POST["email"];
     
     if ($password == $rpassword) {
-        DB::query("INSERT INTO `users` VALUES (:id, :username, :password, :email)", 
-            array(":id" => null, 
-                ":username" => $username, 
-                ":password" => $password, 
-                ":email" => $email));
-        
-        echo "Success!";
+        if (!DB::query("SELECT `username` FROM `users` WHERE 
+            username=:username", array(":username" => $username)) &&
+            !DB::query("SELECT `email` FROM `users` WHERE email=:email", 
+            array(":email" => $email))) {
+            
+            if (strlen($username) >= 3 && strlen($username) <= 32 && 
+                strlen($password) >= 8 && strlen($username) <= 256) {
+                if (preg_match("/[a-zA-Z0-9_]+/", $username)) {
+                    if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        DB::query("INSERT INTO `users` VALUES 
+                            (:id, :username, :password, :email)", 
+                            array(":id" => null, 
+                                ":username" => $username, 
+                                ":password" => 
+                                    password_hash($password, PASSWORD_BCRYPT), 
+                                ":email" => $email));
+                                
+                        echo "Success!";
+                    } else {
+                        echo "Error: Invalid email";
+                    }
+                } else {
+                    echo "Error: Invalid username, wrong charset";
+                }
+            } else {
+                echo "Error: Invalid username and/or password, wrong size";
+            }
+        } else {
+            echo "Error: Username and/or email taken";
+        }
     } else {
         echo "Error: Password does not match";
     }

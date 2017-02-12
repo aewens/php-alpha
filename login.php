@@ -8,13 +8,28 @@ if (isset($_POST["login"])) {
     
     if (DB::query("SELECT `username` FROM `users` WHERE username=:username", 
         array(":username" => $username))) {
-            
-        $dbpswd = DB::query("SELECT `password` FROM `users` WHERE 
+        
+        $get_user = DB::query("SELECT * FROM `users` WHERE 
             username=:username", 
-            array(":username" => $username))[0]["password"];
+            array(":username" => $username));
+        $dbpswd = $get_user[0]["password"];
             
         if (password_verify($password, $dbpswd)) {
-            echo "Welcome, " . $username . "!";
+            echo "Welcome, " . $username . "!<br>";
+            
+            $cstrong = true;
+            $token = bin2hex(openssl_random_pseudo_bytes(64, $cstrong));
+            $user_id = $get_user[0]["id"];
+            
+            DB::query("INSERT INTO `login_tokens` VALUES 
+                (:id, :token, :user_id)",
+                array(":id" => null,
+                    ":token" => sha1($token),
+                    ":user_id" => $user_id));
+                    
+            # 60 * 60 * 24 * 7
+            # name, content, expiration, where, domain, ssl, httponly
+            setcookie("SNID", $token, time() + 604800, "/", null, null, true);
         } else {
             echo "Error: Incorrect password";
         }

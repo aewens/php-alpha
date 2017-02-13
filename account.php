@@ -20,15 +20,22 @@ if (isset($_POST["create"])) {
                 strlen($password) >= 8 && strlen($username) <= 256) {
                 if (preg_match("/[a-zA-Z0-9_]+/", $username)) {
                     if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                        DB::query("INSERT INTO `users` VALUES 
-                            (:id, :username, :password, :email)", 
-                            array(":id" => null, 
-                                ":username" => $username, 
-                                ":password" => 
-                                    password_hash($password, PASSWORD_BCRYPT), 
-                                ":email" => $email));
-                                
-                        echo "Success!";
+                        if (!DB::query("SELECT `email` FROM `users` WHERE 
+                            email=:email", array(":email" => $email))) {
+                            
+                            DB::query("INSERT INTO `users` VALUES 
+                                (:id, :username, :password, :email)", 
+                                array(":id" => null, 
+                                    ":username" => $username, 
+                                    ":password" => 
+                                        password_hash($password, 
+                                            PASSWORD_BCRYPT), 
+                                    ":email" => $email));
+                                    
+                            echo "Success!";    
+                        } else {
+                            echo "Error: Email already on record";
+                        }
                     } else {
                         echo "Error: Invalid email";
                     }

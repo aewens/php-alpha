@@ -2,12 +2,21 @@
 
 require_once "database.php";
 
+if (isset($_COOKIE["SNID"])) {
+    $check_token = DB::query("SELECT `user_id` FROM `login_tokens` WHERE 
+        token=:token", array(":token" => sha1($_COOKIE["SNID"])));
+    
+    if ($check_token) {
+        header("Location: index.php");
+    }
+}
+
 if (isset($_POST["login"])) {
     $username = $_POST["username"];
     $password = $_POST["password"];
     
-    if (DB::query("SELECT `username` FROM `users` WHERE username=:username", 
-        array(":username" => $username))) {
+    if (DB::query("SELECT `username` FROM `users` WHERE 
+        username=:username", array(":username" => $username))) {
         
         $get_user = DB::query("SELECT * FROM `users` WHERE 
             username=:username", 
@@ -27,9 +36,11 @@ if (isset($_POST["login"])) {
                     ":token" => sha1($token),
                     ":user_id" => $user_id));
                     
-            # 60 * 60 * 24 * 7
+            # 60 * 60 * 24 * 7 = 604800
+            # 60 * 60 * 24 * 3 = 259200
             # name, content, expiration, where, domain, ssl, httponly
             setcookie("SNID", $token, time() + 604800, "/", null, null, true);
+            setcookie("SNID_", "_", time() + 259200, "/", null, null, true);
         } else {
             echo "Error: Incorrect password";
         }

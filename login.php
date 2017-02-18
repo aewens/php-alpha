@@ -1,6 +1,6 @@
 <?php
 
-require_once "database.php";
+require_once "utils/database.php";
 
 if (isset($_COOKIE["SNID"])) {
     $check_token = DB::query("SELECT `user_id` FROM `login_tokens` WHERE 

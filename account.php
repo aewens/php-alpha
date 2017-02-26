@@ -17,7 +17,7 @@ if (isset($_POST["create"])) {
             array(":email" => $email))) {
             
             if (strlen($username) >= 3 && strlen($username) <= 32 && 
-                strlen($password) >= 8 && strlen($username) <= 256) {
+                strlen($password) >= 8 && strlen($password) <= 256) {
                 if (preg_match("/[a-zA-Z0-9_]+/", $username)) {
                     if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         if (!DB::query("SELECT `email` FROM `users` WHERE 
